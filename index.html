@@ -1,0 +1,27 @@
+<style>
+    :root { --primary: #004a99; --secondary: #27ae60; --dark: #1a1a1a; }
+    body { 
+        font-family: 'Segoe UI', sans-serif; 
+        background: white; 
+        margin: 0; 
+        padding: 0; 
+        display: block; 
+    }
+    .app-container { 
+        background: white; 
+        width: 100%; 
+        min-height: 100vh; /* Faz o app ocupar a altura toda do celular */
+        margin: 0;
+        border-radius: 0; 
+        box-shadow: none; 
+    }
+    .header { background: var(--primary); color: white; padding: 30px 20px; text-align: center; }
+    .content { padding: 20px; }
+    .upload-area { border: 2px dashed #004a99; background: #f0f7ff; padding: 30px; border-radius: 15px; text-align: center; cursor: pointer; margin-bottom: 20px; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; font-size: 14px; font-weight: bold; color: #444; margin-bottom: 5px; }
+    input, select { width: 100%; padding: 15px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 16px; background: #fff; }
+    .btn-calc { width: 100%; background: var(--secondary); color: white; border: none; padding: 18px; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+    #loading { display: none; text-align: center; margin-bottom: 15px; color: var(--primary); font-weight: bold; }
+    .result-card { display: none; background: #f9f9f9; border: 1px solid #ddd; border-radius: 10px; padding: 20px; margin-top: 20px; border-left: 8px solid var(--secondary); }
+</style>
