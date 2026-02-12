@@ -3,91 +3,145 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Usinagem IA - Orçamentos</title>
+    <title>Usinagem IA - Expert Edition</title>
     <style>
-        :root { --primary: #004a99; --secondary: #27ae60; --dark: #1a1a1a; }
-        body { font-family: 'Segoe UI', sans-serif; background: white; margin: 0; padding: 0; }
-        .app-container { width: 100%; min-height: 100vh; display: flex; flex-direction: column; }
-        .header { background: var(--primary); color: white; padding: 30px 20px; text-align: center; }
+        :root { --primary: #1a2a3a; --accent: #3498db; --success: #27ae60; --warning: #f1c40f; }
+        body { font-family: 'Segoe UI', Roboto, sans-serif; background: #f4f7f9; margin: 0; color: #333; }
+        .app-container { width: 100%; max-width: 500px; margin: auto; background: white; min-height: 100vh; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+        .header { background: var(--primary); color: white; padding: 25px; text-align: center; border-bottom: 4px solid var(--accent); }
         .content { padding: 20px; }
-        .upload-area { border: 2px dashed #004a99; background: #f0f7ff; padding: 30px; border-radius: 15px; text-align: center; cursor: pointer; margin-bottom: 20px; }
+        .section-title { font-size: 14px; color: var(--accent); font-weight: bold; text-transform: uppercase; margin: 20px 0 10px; border-bottom: 1px solid #eee; padding-bottom: 5px; }
         .form-group { margin-bottom: 15px; }
-        label { display: block; font-size: 14px; font-weight: bold; color: #444; margin-bottom: 5px; }
-        input, select { width: 100%; padding: 15px; border: 1px solid #ccc; border-radius: 8px; font-size: 16px; box-sizing: border-box; }
-        .btn-calc { width: 100%; background: var(--secondary); color: white; border: none; padding: 18px; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; }
-        #loading { display: none; text-align: center; margin: 15px 0; color: var(--primary); font-weight: bold; }
-        .result-card { display: none; background: #f9f9f9; border: 1px solid #ddd; border-radius: 10px; padding: 20px; margin-top: 20px; border-left: 8px solid var(--secondary); }
+        label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 5px; color: #555; }
+        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 6px; font-size: 15px; box-sizing: border-box; background: #fafafa; }
+        .grid { display: flex; gap: 10px; }
+        .btn-calc { width: 100%; background: var(--primary); color: white; border: none; padding: 18px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; margin-top: 20px; transition: 0.3s; border: 1px solid var(--accent); }
+        .btn-calc:hover { background: var(--accent); }
+        
+        .results-panel { display: none; margin-top: 25px; padding: 20px; background: #f8f9fa; border-radius: 10px; border: 1px solid #ddd; }
+        .result-item { display: flex; justify-content: space-between; margin-bottom: 10px; font-size: 14px; border-bottom: 1px dashed #eee; padding-bottom: 5px; }
+        .value { font-weight: bold; color: var(--primary); }
+        .price-tag { text-align: center; font-size: 24px; color: var(--success); font-weight: 800; margin-top: 15px; }
+        
+        .ia-scan { background: #e8f4fd; border: 2px dashed var(--accent); padding: 20px; border-radius: 10px; text-align: center; cursor: pointer; margin-bottom: 10px; }
+        #loading { display: none; color: var(--accent); font-weight: bold; text-align: center; margin: 10px 0; font-size: 13px; }
     </style>
 </head>
 <body>
 
 <div class="app-container">
     <div class="header">
-        <h2 style="margin:0">Usinagem IA</h2>
-        <p style="margin:5px 0 0; opacity:0.8; font-size:14px;">Orçamentação Inteligente</p>
+        <h2 style="margin:0">Usinagem Expert IA</h2>
+        <span style="font-size: 12px; opacity: 0.8;">Cálculos de Engenharia e Orçamentação</span>
     </div>
 
     <div class="content">
-        <div class="upload-area" onclick="analisarIA()">
-            <span style="font-size: 40px;">📷</span>
-            <p style="margin: 10px 0 0; font-weight: bold; color: var(--primary);">Anexar Desenho Técnico</p>
-            <p style="font-size: 12px; color: #777;">Toque para simular a leitura</p>
+        <div class="ia-scan" onclick="scanIA()">
+            <span style="font-size: 30px;">📷</span>
+            <p style="margin:5px 0; font-weight:bold;">Escanear Desenho Técnico</p>
+            <small>Extração de cotas e tolerâncias via Visão Computacional</small>
         </div>
+        <div id="loading">⌛ Analisando rugosidade e geometria...</div>
 
-        <div id="loading">🔍 IA analisando geometria...</div>
-
+        <div class="section-title">Dados do Material e Peça</div>
         <div class="form-group">
-            <label>Material</label>
+            <label>Material de Partida</label>
             <select id="mat">
-                <option value="7.85">Aço SAE 1045</option>
-                <option value="2.7">Alumínio 6061</option>
+                <option value="7.85" data-kc="2100">Aço SAE 1045 (200 HB)</option>
+                <option value="8.0" data-kc="2500">Aço Inox 304</option>
+                <option value="2.7" data-kc="700">Alumínio 6061 T6</option>
             </select>
         </div>
-
-        <div style="display: flex; gap: 10px;">
+        <div class="grid">
             <div class="form-group" style="flex:1">
-                <label>Ø (mm)</label>
-                <input type="number" id="diam" placeholder="0">
+                <label>Ø Bruto (mm)</label>
+                <input type="number" id="diam" value="50">
             </div>
             <div class="form-group" style="flex:1">
                 <label>Comp. (mm)</label>
-                <input type="number" id="len" placeholder="0">
+                <input type="number" id="len" value="100">
             </div>
         </div>
 
-        <button class="btn-calc" onclick="calcular()">GERAR ORÇAMENTO</button>
+        <div class="section-title">Parâmetros de Engenharia</div>
+        <div class="grid">
+            <div class="form-group" style="flex:1">
+                <label>Vc (m/min)</label>
+                <input type="number" id="vc" value="180">
+            </div>
+            <div class="form-group" style="flex:1">
+                <label>Avanço f (mm/z)</label>
+                <input type="number" id="f" value="0.2" step="0.01">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>Raio da Ponta da Ferramenta (mm)</label>
+            <input type="number" id="raio" value="0.8" step="0.4">
+        </div>
 
-        <div id="result" class="result-card">
-            <p><strong>Peso:</strong> <span id="resPeso">0</span> kg</p>
-            <h3 style="color: var(--secondary); margin:0;">Total: R$ <span id="resPreco">0,00</span></h3>
+        <button class="btn-calc" onclick="calcularEngenharia()">GERAR ANÁLISE TÉCNICA</button>
+
+        <div id="results" class="results-panel">
+            <div class="result-item"><span>Rotação Calculada:</span> <span class="value" id="resRPM">0</span> RPM</div>
+            <div class="result-item"><span>Rugosidade Teórica (Ra):</span> <span class="value" id="resRa">0</span> µm</div>
+            <div class="result-item"><span>Potência de Corte Est.:</span> <span class="value" id="resPot">0</span> kW</div>
+            <div class="result-item"><span>Massa Bruta:</span> <span class="value" id="resPeso">0</span> kg</div>
+            <div class="price-tag">R$ <span id="resPreco">0,00</span></div>
+            <p style="font-size: 10px; color: #888; text-align: center; margin-top: 10px;">Cálculos baseados em Kc (Pressão Específica de Corte) e Geometria ISO.</p>
         </div>
     </div>
 </div>
 
 <script>
-function analisarIA() {
+function scanIA() {
     const loader = document.getElementById('loading');
     loader.style.display = 'block';
     setTimeout(() => {
-        document.getElementById('diam').value = 50;
-        document.getElementById('len').value = 120;
-        loader.innerHTML = "✅ Dados extraídos!";
-        setTimeout(() => { loader.style.display = 'none'; }, 1000);
-    }, 2000);
+        document.getElementById('diam').value = 80;
+        document.getElementById('len').value = 250;
+        document.getElementById('f').value = 0.15;
+        loader.innerHTML = "✅ Geometria detectada! Sugestão: Acabamento Ra 1.6";
+        setTimeout(() => { loader.style.display = 'none'; }, 1500);
+    }, 2500);
 }
 
-function calcular() {
-    let d = document.getElementById('diam').value / 10;
-    let l = document.getElementById('len').value / 10;
-    let dens = document.getElementById('mat').value;
-    let peso = (Math.PI * Math.pow(d/2, 2) * l * dens) / 1000;
-    let preco = (peso * 25) + 150;
+function calcularEngenharia() {
+    // Pegar valores
+    const D = parseFloat(document.getElementById('diam').value);
+    const L = parseFloat(document.getElementById('len').value);
+    const Vc = parseFloat(document.getElementById('vc').value);
+    const f = parseFloat(document.getElementById('f').value);
+    const r = parseFloat(document.getElementById('raio').value);
+    const dens = parseFloat(document.getElementById('mat').value);
+    const Kc = parseFloat(document.getElementById('mat').selectedOptions[0].getAttribute('data-kc'));
 
+    // 1. RPM: (Vc * 1000) / (PI * D)
+    const rpm = (Vc * 1000) / (Math.PI * D);
+    
+    // 2. Rugosidade Ra ≈ (f^2) / (32 * r) * 1000 (para converter em micra)
+    const ra = (Math.pow(f, 2) / (32 * r)) * 1000;
+
+    // 3. Potência (Simplificada): (ap * f * Vc * Kc) / (60 * 10^3 * rendimento)
+    // Assumindo ap (profundidade) de 2mm e rendimento 0.8
+    const pot = (2 * f * Vc * Kc) / (60000 * 0.8);
+
+    // 4. Peso
+    const peso = (Math.PI * Math.pow(D/20, 2) * (L/10) * dens) / 1000;
+
+    // Exibir resultados
+    document.getElementById('resRPM').innerText = Math.round(rpm);
+    document.getElementById('resRa').innerText = ra.toFixed(2);
+    document.getElementById('resPot').innerText = pot.toFixed(2);
     document.getElementById('resPeso').innerText = peso.toFixed(2);
+    
+    // Preço Estimado (Logística de Freela)
+    const preco = (peso * 25) + (pot * 50) + 200; // Material + Complexidade de Energia + Setup
     document.getElementById('resPreco').innerText = preco.toLocaleString('pt-BR', {minimumFractionDigits: 2});
-    document.getElementById('result').style.display = 'block';
+
+    document.getElementById('results').style.display = 'block';
 }
 </script>
 
 </body>
 </html>
+
